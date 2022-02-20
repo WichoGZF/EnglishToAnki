@@ -1,9 +1,6 @@
 import json
-import string
 import urllib.request
 import requests
-from bs4 import BeautifulSoup
-import time
 
 
 def request(action, **params):
@@ -69,8 +66,21 @@ def fetchData(word):
 
     # Requesting meanings to open API dictionary (and turning into JSON)
     request_dictionary = requests.get(
-        'https://api.dictionaryapi.dev/api/v2/entries/en/'+word).json()
+        'https://api.dictionaryapi.dev/api/v2/entries/en/'+word)
 
+    #If status code isn't 404 
+    if request_dictionary.status_code<400:
+        ## Formatting each dictionary entry into an array
+        word = request_dictionary[0]["word"]
+        for i in request_dictionary[0]["meanings"]:
+            definitions += i["definitions"][0]["definition"] + "<br>"
+    else: 
+        print("Error, definition not found in open API ", request_dictionary.status_code," status code returned.")
+        definitions = ""
+        word = ""
+    #No need to scrape google website as all the audio files follow a similar address. 
+    """"
+    #
     # Getting HTML
     audio = urllib.request.urlopen(request)
     # Decoding from utf-8
@@ -87,18 +97,24 @@ def fetchData(word):
             link= "https:" + audio_tag[0].source["src"]
         else: link=""
     else: link= ""
+    """
     
-    definitions = ""
-    ## Formatting each dictionary entry into an array
-    for i in request_dictionary[0]["meanings"]:
-        definitions += i["definitions"][0]["definition"] + "<br>"
+    #Audio files from google (US pronunciation)
+    audio_request = requests.get("https://ssl.gstatic.com/dictionary/static/sounds/20200429/{}--_us_1.mp3".format(word))
+
+    #If the audio file exists, return that as the note link to sound, else return an empty string. 
+    if(audio_request.status_code<400):
+        audio = audio_request.url
+    else: 
+        print("Error, definition not found in open API ", audio_request.status_code," status code returned.")
+        audio = ""
     
-    
+    #Returns the word, definitions and audio link (if exist)
     return(
         [
-            request_dictionary[0]["word"],
+            word,
             definitions,
-            link
+            audio
         ]
     )
 
@@ -107,27 +123,27 @@ def fetchData(word):
 # result = invoke('deckNames')
 # print('got list of decks: {}'.format(result))
 
-# reads words from words.txt in the same folder
-
+#Reads txt file into a list (assumes eachword separated by newline, you can add the desired separator and or address here.)
 with open("words.txt", 'r') as f:
     text = f.read().split('\n')
-
+#debug
 print(text)
-
+#list for notes
 notes_to_add = []
 for i in text:
-    print(i)
+    #fetch data from API and google.
     note_data = fetchData(i)
+    #create note with spread values of the list returned from fetch_data
     note = createNote(*note_data)
-    print(note)
+    #appends to list the newly created note
     notes_to_add.append(note)
-    print(notes_to_add)
 
 
 #note = createNote(*fetchData("six"))
-print(notes_to_add)
+#print(notes_to_add)
 
+#Call to API with action addNotes and the notes list as args. 
 invoke("addNotes", notes=notes_to_add)
-
-result = invoke('findNotes', query='deck:test1')
-print(result)
+#
+#result = invoke('findNotes', query='deck:test1')
+#print(result)
