@@ -155,9 +155,9 @@ for i in range(len(text)):
     note_data = fetch_data(text[i])
     #log file tester
     if note_data[1]=="":
-        text[i] = text[i] + " -Audio"
-    if note_data[2]=="":
         text[i] = text[i] + " -Def"
+    if note_data[2]=="":
+        text[i] = text[i] + " -Audio"
     #create note with spread values of the list returned from fetch_data
     note = createNote(*note_data)
     #appends to list the newly created note
