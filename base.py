@@ -56,7 +56,10 @@ def createNote(word, glossary, audio_url):
     )
 
 
-def fetchData(word):
+def fetch_data(word):
+    #open file for logging purposes. 
+    
+
     # Defining request templete
     request = urllib.request.Request(
         "https://www.google.com/search?q={}+meaning".format(word))
@@ -71,11 +74,12 @@ def fetchData(word):
     #If status code isn't 404 
     if request_dictionary.status_code<400:
         ## Formatting each dictionary entry into an array
+        request_dictionary = request_dictionary.json()
         word = request_dictionary[0]["word"]
+        definitions = "" #declaring definitions string
         for i in request_dictionary[0]["meanings"]:
             definitions += i["definitions"][0]["definition"] + "<br>"
     else: 
-        print("Error, definition not found in open API ", request_dictionary.status_code," status code returned.")
         definitions = ""
         word = ""
     #No need to scrape google website as all the audio files follow a similar address. 
@@ -106,7 +110,6 @@ def fetchData(word):
     if(audio_request.status_code<400):
         audio = audio_request.url
     else: 
-        print("Error, definition not found in open API ", audio_request.status_code," status code returned.")
         audio = ""
     
     #Returns the word, definitions and audio link (if exist)
@@ -130,20 +133,35 @@ with open("words.txt", 'r') as f:
 print(text)
 #list for notes
 notes_to_add = []
-for i in text:
+for i in range(len(text)):
     #fetch data from API and google.
-    note_data = fetchData(i)
+    note_data = fetch_data(text[i])
+    #log file tester
+    if note_data[1]=="":
+        text[i] = text[i] + " -Audio"
+    if note_data[2]=="":
+        text[i] = text[i] + " -Def"
     #create note with spread values of the list returned from fetch_data
     note = createNote(*note_data)
     #appends to list the newly created note
     notes_to_add.append(note)
 
+#with open("logs.txt", 'w') as f:
+#    f.write(text)
 
-#note = createNote(*fetchData("six"))
+#note = createNote(*fetch_data("six"))
 #print(notes_to_add)
 
 #Call to API with action addNotes and the notes list as args. 
-invoke("addNotes", notes=notes_to_add)
+result = invoke("addNotes", notes=notes_to_add)
+
+#Logger, append note code on success, else "none".
+
+for i in range(len(result)):
+    text[i] = text[i] + " " + str(result[i])
 #
-#result = invoke('findNotes', query='deck:test1')
-#print(result)
+
+print(text)
+
+
+
