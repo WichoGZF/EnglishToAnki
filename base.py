@@ -2,11 +2,11 @@ import json
 import urllib.request
 import requests
 
-
+#From Anki connect documentation, sample request making function.
 def request(action, **params):
     return {'action': action, 'params': params, 'version': 6}
 
-
+#From anki connect documentation, sample call to API.
 def invoke(action, **params):
     requestJson = json.dumps(request(action, **params)).encode('utf-8')
     response = json.load(urllib.request.urlopen(
@@ -20,21 +20,20 @@ def invoke(action, **params):
     if response['error'] is not None:
         raise Exception(response['error'])
     return response['result']
-
-#Sample simple note creating function, takes three strings (glossary already formatted in html)
-
+#Simple anki connect note creating function. 
+#Change this to fit your note template. There's probably a way to do it on ankiconnect but this works for me.
 def createNote(word, glossary, audio_url):
     return (
         {
-            "deckName": "test1",
-            "modelName": "Vocab card",
+            "deckName": "test1", #Change this for your target deckName
+            "modelName": "Vocab card", #
             "fields": {
                 "Word": word,
                 "Glossary": glossary,
                 "Sentence": "",
             },
             "options": {
-                "allowDuplicate": False,
+                "allowDuplicate": False, #Change if you want duplicates
                 "duplicateScope": "deck",
                 "duplicateScopeOptions": {
                     "deckName": "test1",
@@ -121,13 +120,14 @@ def fetch_data(word):
         ]
     )
 
-
-# invoke('createDeck', deck='test1')
-# result = invoke('deckNames')
-# print('got list of decks: {}'.format(result))
+'''
+ invoke('createDeck', deck='test1')
+ result = invoke('deckNames')
+ print('got list of decks: {}'.format(result))
+ '''
 
 #Reads txt file into a list (assumes eachword separated by newline, you can add the desired separator and or address here.)
-with open("words.txt", 'r') as f:
+with open("words.txt", 'r') as f: 
     text = f.read().split('\n')
 #debug
 print(text)
