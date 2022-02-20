@@ -25,7 +25,7 @@ def invoke(action, **params):
 def createNote(word, glossary, audio_url):
     return (
         {
-            "deckName": "test1", #Change this for your target deckName
+            "deckName": "Language learning::English", #Change this for your target deckName
             "modelName": "Vocab card", #
             "fields": {
                 "Word": word,
@@ -105,11 +105,28 @@ def fetch_data(word):
     #Audio files from google (US pronunciation)
     audio_request = requests.get("https://ssl.gstatic.com/dictionary/static/sounds/20200429/{}--_us_1.mp3".format(word))
 
-    #If the audio file exists, return that as the note link to sound, else return an empty string. 
+    #Nested ifs to select the available server for the pronunciation. 
     if(audio_request.status_code<400):
         audio = audio_request.url
     else: 
-        audio = ""
+            audio_request = requests.get("https://ssl.gstatic.com/dictionary/static/sounds/20200429/{}--_us_2.mp3".format(word))
+            
+            if(audio_request.status_code<400):
+                audio = audio_request.url
+            else: 
+                audio_request = requests.get("https://ssl.gstatic.com/dictionary/static/sounds/20200429/{}--_us_4.mp3".format(word))
+
+                if(audio_request.status_code<400):
+                    audio = audio_request.url
+                
+                else: 
+                    audio_request = request.get("https://www.google.com/speech-api/v1/synthesize?text={}&enc=mpeg&lang=en-us&speed=0.4&client=lr-language-tts&use_google_only_voices=1".format(word))
+
+                    if(audio_request.status_code<400):
+                        audio = audio_request.url
+                    
+                    else:
+                        audio = ""
     
     #Returns the word, definitions and audio link (if exist)
     return(
