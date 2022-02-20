@@ -146,8 +146,7 @@ for i in range(len(text)):
     #appends to list the newly created note
     notes_to_add.append(note)
 
-#with open("logs.txt", 'w') as f:
-#    f.write(text)
+
 
 #note = createNote(*fetch_data("six"))
 #print(notes_to_add)
@@ -155,13 +154,17 @@ for i in range(len(text)):
 #Call to API with action addNotes and the notes list as args. 
 result = invoke("addNotes", notes=notes_to_add)
 
-#Logger, append note code on success, else "none".
-
+#Logger
+stringu = "" #For storing the formatted list
 for i in range(len(result)):
-    text[i] = text[i] + " " + str(result[i])
-#
+    stringu = stringu+ text[i] + " " + "id:" + str(result[i])+ '\n'
 
-print(text)
+#Print to screen
+print(stringu)
+
+#Write logs to local file. 
+with open("logs.txt", 'w') as f:
+    f.write(stringu)
 
 
 
